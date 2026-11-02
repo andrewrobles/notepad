@@ -1,4 +1,5 @@
 usage: notepad archive [<title>]
 
-Saves notepad content in ~/notepad/<date>/<title>.md
+Appends notepad content to ~/notepad/<date>/<title>.md,
+or ~/notepad/<date>/.md if no title is given
 

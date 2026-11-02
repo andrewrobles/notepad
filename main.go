@@ -22,15 +22,20 @@ func main() {
 		return
 	}
 
-	if len(os.Args) != 2 || os.Args[1] != "archive" {
+	if len(os.Args) < 2 || os.Args[1] != "archive" || len(os.Args) > 3 {
 		printUsage()
 		os.Exit(1)
 	}
 
-	// if err := archiveReminders(); err != nil {
-	// 	fmt.Println("reminders:", err)
-	// 	os.Exit(1)
-	// }
+	var title string
+	if len(os.Args) == 3 {
+		title = os.Args[2]
+	}
+
+	if err := archiveNotepad(title); err != nil {
+		fmt.Println("notepad:", err)
+		os.Exit(1)
+	}
 }
 
 func printUsage() {
