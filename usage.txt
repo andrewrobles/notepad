@@ -1,0 +1,4 @@
+usage: notepad archive [<title>]
+
+Saves notepad content in ~/notepad/<date>/<title>.md
+
