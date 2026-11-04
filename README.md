@@ -9,5 +9,6 @@ Install
 
 ```sh
 go build
-sudo cp x /usr/local/bin/x
+cp notepad.exe "$LOCALAPPDATA/Microsoft/WindowsApps/notepad.exe"
+
 ```
