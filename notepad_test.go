@@ -24,14 +24,6 @@ func writeNotepad(t *testing.T, home, contents string) {
 	}
 }
 
-// setFakeHome points os.UserHomeDir at the given directory on all platforms
-// (HOME on Unix, USERPROFILE on Windows).
-func setFakeHome(t *testing.T, home string) {
-	t.Helper()
-	t.Setenv("HOME", home)
-	t.Setenv("USERPROFILE", home)
-}
-
 // archivePath returns the expected archive path for today's date and the
 // given title (empty for the untitled ".md" archive).
 func archivePath(home, title string) string {
@@ -58,7 +50,7 @@ func commitCount(t *testing.T, dir string) int {
 
 func TestArchiveNotepad_Success(t *testing.T) {
 	home := t.TempDir()
-	setFakeHome(t, home)
+	t.Setenv("HOME", home)
 	writeNotepad(t, home, "hello world")
 
 	if err := archiveNotepad(""); err != nil {
@@ -96,7 +88,7 @@ func TestArchiveNotepad_Success(t *testing.T) {
 
 func TestArchiveNotepad_WithTitle(t *testing.T) {
 	home := t.TempDir()
-	setFakeHome(t, home)
+	t.Setenv("HOME", home)
 	writeNotepad(t, home, "titled content")
 
 	if err := archiveNotepad("ideas"); err != nil {
@@ -119,7 +111,7 @@ func TestArchiveNotepad_WithTitle(t *testing.T) {
 
 func TestArchiveNotepad_Empty(t *testing.T) {
 	home := t.TempDir()
-	setFakeHome(t, home)
+	t.Setenv("HOME", home)
 	writeNotepad(t, home, "")
 
 	if err := archiveNotepad(""); err != nil {
@@ -134,7 +126,7 @@ func TestArchiveNotepad_Empty(t *testing.T) {
 
 func TestArchiveNotepad_MissingFile(t *testing.T) {
 	home := t.TempDir()
-	setFakeHome(t, home)
+	t.Setenv("HOME", home)
 	// Note: ~/notepad/.md deliberately not created.
 
 	err := archiveNotepad("")
@@ -148,7 +140,7 @@ func TestArchiveNotepad_MissingFile(t *testing.T) {
 
 func TestArchiveNotepad_SameDayArchivesAppend(t *testing.T) {
 	home := t.TempDir()
-	setFakeHome(t, home)
+	t.Setenv("HOME", home)
 	writeNotepad(t, home, "first entry")
 
 	if err := archiveNotepad(""); err != nil {
@@ -187,7 +179,7 @@ func TestArchiveNotepad_SameDayArchivesAppend(t *testing.T) {
 
 func TestArchiveNotepad_TitledAndUntitledAreSeparate(t *testing.T) {
 	home := t.TempDir()
-	setFakeHome(t, home)
+	t.Setenv("HOME", home)
 
 	writeNotepad(t, home, "untitled entry")
 	if err := archiveNotepad(""); err != nil {

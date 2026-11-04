@@ -5,17 +5,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
-	"time"
 )
 
 // buildNotepadBinary compiles the CLI once per test run and returns its path.
 func buildNotepadBinary(t *testing.T) string {
 	t.Helper()
 
-	bin := exeName(filepath.Join(t.TempDir(), "notepad"))
+	bin := filepath.Join(t.TempDir(), "notepad")
 	cmd := exec.Command("go", "build", "-o", bin, ".")
 	cmd.Dir = mustGetwd(t)
 	if out, err := cmd.CombinedOutput(); err != nil {
@@ -34,65 +32,11 @@ func mustGetwd(t *testing.T) string {
 	return wd
 }
 
-// exeName appends the platform executable suffix so built binaries can be run.
-func exeName(path string) string {
-	if runtime.GOOS == "windows" {
-		return path + ".exe"
-	}
-	return path
-}
-
-// buildFakeNotepad compiles a stand-in executable that records its invocation
-// by creating the file named in NOTEPAD_MARKER, so passthrough can be tested
-// without launching the real GUI editor.
-func buildFakeNotepad(t *testing.T) string {
-	t.Helper()
-
-	dir := t.TempDir()
-	src := filepath.Join(dir, "fake.go")
-	const prog = `package main
-
-import "os"
-
-func main() {
-	if m := os.Getenv("NOTEPAD_MARKER"); m != "" {
-		os.WriteFile(m, []byte("called"), 0644)
-	}
-}
-`
-	if err := os.WriteFile(src, []byte(prog), 0644); err != nil {
-		t.Fatalf("write fake notepad source: %v", err)
-	}
-
-	bin := exeName(filepath.Join(dir, "fakenotepad"))
-	cmd := exec.Command("go", "build", "-o", bin, src)
-	if out, err := cmd.CombinedOutput(); err != nil {
-		t.Fatalf("build fake notepad: %v\n%s", err, out)
-	}
-
-	return bin
-}
-
-// waitForFile waits for path to exist, accommodating the detached (Start-only)
-// launch of the forwarded notepad process.
-func waitForFile(t *testing.T, path string) {
-	t.Helper()
-
-	deadline := time.Now().Add(2 * time.Second)
-	for time.Now().Before(deadline) {
-		if _, err := os.Stat(path); err == nil {
-			return
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
-	t.Fatalf("file %s was not created within timeout", path)
-}
-
 func runCLI(t *testing.T, bin, home string, args ...string) (stdout, stderr string, exitCode int) {
 	t.Helper()
 
 	cmd := exec.Command(bin, args...)
-	cmd.Env = append(os.Environ(), "HOME="+home, "USERPROFILE="+home)
+	cmd.Env = append(os.Environ(), "HOME="+home)
 
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = &outBuf
@@ -111,36 +55,32 @@ func runCLI(t *testing.T, bin, home string, args ...string) (stdout, stderr stri
 	return outBuf.String(), errBuf.String(), exitCode
 }
 
-func TestCLI_NoArgs_ForwardsToNotepad(t *testing.T) {
+func TestCLI_NoArgs_PrintsUsageAndExits1(t *testing.T) {
 	bin := buildNotepadBinary(t)
 	home := t.TempDir()
-	fake := buildFakeNotepad(t)
-	marker := filepath.Join(t.TempDir(), "marker")
-	t.Setenv("NOTEPAD_EXE", fake)
-	t.Setenv("NOTEPAD_MARKER", marker)
 
-	_, _, code := runCLI(t, bin, home)
+	stdout, _, code := runCLI(t, bin, home)
 
-	if code != 0 {
-		t.Errorf("exit code = %d, want 0", code)
+	if code != 1 {
+		t.Errorf("exit code = %d, want 1", code)
 	}
-	waitForFile(t, marker)
+	if !strings.Contains(stdout, "usage: notepad archive") {
+		t.Errorf("stdout = %q, want it to contain usage text", stdout)
+	}
 }
 
-func TestCLI_UnknownArg_ForwardsToNotepad(t *testing.T) {
+func TestCLI_UnknownArg_PrintsUsageAndExits1(t *testing.T) {
 	bin := buildNotepadBinary(t)
 	home := t.TempDir()
-	fake := buildFakeNotepad(t)
-	marker := filepath.Join(t.TempDir(), "marker")
-	t.Setenv("NOTEPAD_EXE", fake)
-	t.Setenv("NOTEPAD_MARKER", marker)
 
-	_, _, code := runCLI(t, bin, home, "bogus")
+	stdout, _, code := runCLI(t, bin, home, "bogus")
 
-	if code != 0 {
-		t.Errorf("exit code = %d, want 0", code)
+	if code != 1 {
+		t.Errorf("exit code = %d, want 1", code)
 	}
-	waitForFile(t, marker)
+	if !strings.Contains(stdout, "usage: notepad archive") {
+		t.Errorf("stdout = %q, want it to contain usage text", stdout)
+	}
 }
 
 func TestCLI_Version(t *testing.T) {
