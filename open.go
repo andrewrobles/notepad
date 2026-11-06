@@ -15,7 +15,12 @@ func openNotepad() error {
 
 	path := filepath.Join(home, "notepad", ".md")
 
-	cmd := exec.Command("notepad", path)
+	notepad := "notepad.exe"
+	if root := os.Getenv("SystemRoot"); root != "" {
+		notepad = filepath.Join(root, "System32", "notepad.exe")
+	}
+
+	cmd := exec.Command(notepad, path)
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("open notepad: %w", err)
 	}
