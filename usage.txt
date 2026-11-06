@@ -1,1 +1,2 @@
 usage: notepad archive [<title>]
+       notepad open

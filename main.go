@@ -22,18 +22,31 @@ func main() {
 		return
 	}
 
-	if len(os.Args) < 2 || os.Args[1] != "archive" || len(os.Args) > 3 {
+	switch os.Args[1] {
+	case "archive":
+		if len(os.Args) > 3 {
+			printUsage()
+			os.Exit(1)
+		}
+		var title string
+		if len(os.Args) == 3 {
+			title = os.Args[2]
+		}
+		if err := archiveNotepad(title); err != nil {
+			fmt.Println("notepad:", err)
+			os.Exit(1)
+		}
+	case "open":
+		if len(os.Args) > 2 {
+			printUsage()
+			os.Exit(1)
+		}
+		if err := openNotepad(); err != nil {
+			fmt.Println("notepad:", err)
+			os.Exit(1)
+		}
+	default:
 		printUsage()
-		os.Exit(1)
-	}
-
-	var title string
-	if len(os.Args) == 3 {
-		title = os.Args[2]
-	}
-
-	if err := archiveNotepad(title); err != nil {
-		fmt.Println("notepad:", err)
 		os.Exit(1)
 	}
 }
