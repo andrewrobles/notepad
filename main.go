@@ -23,7 +23,7 @@ func main() {
 	}
 
 	switch os.Args[1] {
-	case "archive":
+	case "save":
 		if len(os.Args) > 3 {
 			printUsage()
 			os.Exit(1)

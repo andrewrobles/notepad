@@ -64,7 +64,7 @@ func TestCLI_NoArgs_PrintsUsageAndExits1(t *testing.T) {
 	if code != 1 {
 		t.Errorf("exit code = %d, want 1", code)
 	}
-	if !strings.Contains(stdout, "usage: notepad archive") {
+	if !strings.Contains(stdout, "usage: notepad save") {
 		t.Errorf("stdout = %q, want it to contain usage text", stdout)
 	}
 }
@@ -78,7 +78,7 @@ func TestCLI_UnknownArg_PrintsUsageAndExits1(t *testing.T) {
 	if code != 1 {
 		t.Errorf("exit code = %d, want 1", code)
 	}
-	if !strings.Contains(stdout, "usage: notepad archive") {
+	if !strings.Contains(stdout, "usage: notepad save") {
 		t.Errorf("stdout = %q, want it to contain usage text", stdout)
 	}
 }
@@ -103,7 +103,7 @@ func TestCLI_Archive_EndToEnd(t *testing.T) {
 	home := t.TempDir()
 	writeNotepad(t, home, "notes from the CLI test")
 
-	stdout, _, code := runCLI(t, bin, home, "archive")
+	stdout, _, code := runCLI(t, bin, home, "save")
 	if code != 0 {
 		t.Fatalf("archive exit code = %d, stdout=%q", code, stdout)
 	}
@@ -121,7 +121,7 @@ func TestCLI_Archive_EndToEnd(t *testing.T) {
 	}
 
 	// Running archive again with nothing to archive should succeed with the "no contents" message.
-	stdout, _, code = runCLI(t, bin, home, "archive")
+	stdout, _, code = runCLI(t, bin, home, "save")
 	if code != 0 {
 		t.Fatalf("second archive exit code = %d, stdout=%q", code, stdout)
 	}
@@ -135,7 +135,7 @@ func TestCLI_Archive_WithTitle(t *testing.T) {
 	home := t.TempDir()
 	writeNotepad(t, home, "titled CLI notes")
 
-	stdout, _, code := runCLI(t, bin, home, "archive", "ideas")
+	stdout, _, code := runCLI(t, bin, home, "save", "ideas")
 	if code != 0 {
 		t.Fatalf("archive exit code = %d, stdout=%q", code, stdout)
 	}
@@ -156,12 +156,12 @@ func TestCLI_Archive_TooManyArgs_PrintsUsageAndExits1(t *testing.T) {
 	bin := buildNotepadBinary(t)
 	home := t.TempDir()
 
-	stdout, _, code := runCLI(t, bin, home, "archive", "title", "extra")
+	stdout, _, code := runCLI(t, bin, home, "save", "title", "extra")
 
 	if code != 1 {
 		t.Errorf("exit code = %d, want 1", code)
 	}
-	if !strings.Contains(stdout, "usage: notepad archive") {
+	if !strings.Contains(stdout, "usage: notepad save") {
 		t.Errorf("stdout = %q, want it to contain usage text", stdout)
 	}
 }

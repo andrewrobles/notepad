@@ -1,2 +1,2 @@
-usage: notepad archive [<title>]
+usage: notepad save [<title>]
        notepad open
